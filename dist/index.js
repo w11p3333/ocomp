@@ -13,9 +13,22 @@ var VueCompile = function VueCompile(option) {
 // 生成vue实例
 VueCompile.prototype.makeVueInstance = function makeVueInstance (option) {
   var render = this.makeVueRender(option.component);
+  var newMethod = option.method || {};
+  var oldData = option.data || {};
+  var newData = _Object$assign({}, oldData);
+  newData.data = oldData;
+  newMethod.setData = function (obj) {
+    var vueInstanceSelf = this;
+    _Object$keys(obj).forEach(function (key) {
+      if (vueInstanceSelf[key]) {
+        vueInstanceSelf[key] = obj[key];
+        vueInstanceSelf['data'][key] = obj[key];
+      }
+    });
+  };
   return {
-    methods: option.method || {},
-    data: function (_) { return option.data || {}; },
+    methods: newMethod,
+    data: function (_) { return newData; },
     render: render
   };
 };

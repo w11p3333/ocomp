@@ -53,9 +53,22 @@ export default class VueCompile {
   // 生成vue实例
   makeVueInstance (option: CONSTRUCTOR_OPTION): VUE_INSTANCE {
     const render: Function = this.makeVueRender(option.component)
+    const newMethod = option.method || {}
+    const oldData = option.data || {}
+    const newData = Object.assign({}, oldData)
+    newData.data = oldData
+    newMethod.setData = function (obj) {
+      const vueInstanceSelf = this
+      Object.keys(obj).forEach(function (key) {
+        if (vueInstanceSelf[key]) {
+          vueInstanceSelf[key] = obj[key]
+          vueInstanceSelf['data'][key] = obj[key]
+        }
+      })
+    }
     return {
-      methods: option.method || {},
-      data: _ => option.data || {},
+      methods: newMethod,
+      data: _ => newData,
       render
     }
   }
