@@ -13,10 +13,9 @@ var VueCompile = function VueCompile(option) {
 // 生成vue实例
 VueCompile.prototype.makeVueInstance = function makeVueInstance (option) {
   var render = this.makeVueRender(option.component);
-  var dataObj = option.data;
   return {
     methods: option.method || {},
-    data: function (_) { return dataObj || {}; },
+    data: function (_) { return option.data || {}; },
     render: render
   };
 };
@@ -24,10 +23,11 @@ VueCompile.prototype.makeVueInstance = function makeVueInstance (option) {
 // vue实现 render
 VueCompile.prototype.makeVueRender = function makeVueRender (components) {
   var classSelf = this; // this指向类
-  return function (h) {
+  return function (createElement) {
     var vueInstanceSelf = this; // this指向vue实例
     classSelf.makeVueRouter.call(vueInstanceSelf);
-    return h('div', components.map(function (ref) {
+    // div作为父组件包裹
+    return createElement('div', components.map(function (ref) {
         var components = ref.components;
         var option = ref.option;
 
@@ -35,9 +35,9 @@ VueCompile.prototype.makeVueRender = function makeVueRender (components) {
         // 遍历以转换格式为vue组件配置格式
         classSelf.translateToVueProps.call(vueInstanceSelf, option);
         classSelf.translateToVueMethods.call(vueInstanceSelf, option);
-        return h(components, option);
+        return createElement(components, option); // 若存在组件配置
       } else {
-        return h(components);
+        return createElement(components); // 不存在组件配置
       }
     }));
   };
@@ -46,15 +46,13 @@ VueCompile.prototype.makeVueRender = function makeVueRender (components) {
 // 配置vue router实例
 VueCompile.prototype.makeVueRouter = function makeVueRouter () {
   if (!this.$route || !this.$router) { throw new Error('路由api依赖 vue router'); }
-  this.router = _Object$assign(this.$router, this.$route);
+  this.router = _Object$assign(this.$router, this.$route); // 将vue router中的router route对象 混合
   this.router.pop = function (_) { return history.back(); };
-  // 重写push 方法 当传入string时直接作为path
 };
 
 // 将props指向vue父组件实例
 VueCompile.prototype.translateToVueProps = function translateToVueProps (option) {
   var vueInstanceSelf = this; // this指向vue上的实例
-  // add props
   if (!option.prop) { return; }
   var PROPS = _Object$assign({}, option.prop);
   option.props = option.props || {};
@@ -66,7 +64,6 @@ VueCompile.prototype.translateToVueProps = function translateToVueProps (option)
 // 将methods指向vue父组件实例
 VueCompile.prototype.translateToVueMethods = function translateToVueMethods (option) {
   var vueInstanceSelf = this; // this指向vue上的实例
-  // add on
   if (option.on || !option.method) { return; }
   var METHODS = _Object$assign({}, option.method);
   option.on = {};

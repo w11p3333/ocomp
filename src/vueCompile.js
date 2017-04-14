@@ -53,10 +53,9 @@ export default class VueCompile {
   // 生成vue实例
   makeVueInstance (option: CONSTRUCTOR_OPTION): VUE_INSTANCE {
     const render: Function = this.makeVueRender(option.component)
-    const dataObj: ?Object = option.data
     return {
       methods: option.method || {},
-      data: _ => dataObj || {},
+      data: _ => option.data || {},
       render
     }
   }
@@ -64,17 +63,18 @@ export default class VueCompile {
   // vue实现 render
   makeVueRender (components: COMPONENT_ARRAY): Function {
     var classSelf = this // this指向类
-    return function (h: Function) {
+    return function (createElement: Function) {
     var vueInstanceSelf = this // this指向vue实例
     classSelf.makeVueRouter.call(vueInstanceSelf)
-    return h('div', components.map(({ components, option }) => {
+    // div作为父组件包裹
+    return createElement('div', components.map(({ components, option }) => {
       if (option) {
         // 遍历以转换格式为vue组件配置格式
         classSelf.translateToVueProps.call(vueInstanceSelf, option)
         classSelf.translateToVueMethods.call(vueInstanceSelf, option)
-        return h(components, option)
+        return createElement(components, option) // 若存在组件配置
       } else {
-        return h(components)
+        return createElement(components) // 不存在组件配置
       }
       }))
     }
@@ -86,15 +86,13 @@ export default class VueCompile {
   // 配置vue router实例
   makeVueRouter () {
     if (!this.$route || !this.$router) throw new Error('路由api依赖 vue router')
-    this.router = Object.assign(this.$router, this.$route)
+    this.router = Object.assign(this.$router, this.$route) // 将vue router中的router route对象 混合
     this.router.pop = _ => history.back()
-    // 重写push 方法 当传入string时直接作为path
   }
 
   // 将props指向vue父组件实例
   translateToVueProps (option: COMPONENT_OBJECT_OPTION): void {
     var vueInstanceSelf: Object = this // this指向vue上的实例
-    // add props
     if (!option.prop) return
     const PROPS = Object.assign({}, option.prop)
     option.props = option.props || {}
@@ -106,7 +104,6 @@ export default class VueCompile {
   // 将methods指向vue父组件实例
   translateToVueMethods (option: COMPONENT_OBJECT_OPTION): void {
     var vueInstanceSelf: Object = this // this指向vue上的实例
-    // add on
     if (option.on || !option.method) return
     const METHODS = Object.assign({}, option.method)
     option.on = {}
