@@ -12,6 +12,7 @@ export default class OComp {
 
   // 渲染
   render (option) {
+    if (!option) throw new Error('构造参数不存在')
     const componentsArr = option.component
     if (!componentsArr || !Array.isArray(componentsArr)) throw new Error('组件列表必须为数组')
     const TYPE = process.env.COMPILE_ENV

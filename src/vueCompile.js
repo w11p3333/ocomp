@@ -45,37 +45,46 @@ type CONSTRUCTOR_OPTION = {
 
 export default class VueCompile {
 
-  option: CONSTRUCTOR_OPTION
   constructor (option: CONSTRUCTOR_OPTION): VUE_INSTANCE {
-    this.option = option
-    return this.renderVue(option.component)
+    return this.makeVueInstance(option)
+  }
+
+    option: CONSTRUCTOR_OPTION
+  // 生成vue实例
+  makeVueInstance (option: CONSTRUCTOR_OPTION): VUE_INSTANCE {
+    const render: Function = this.makeVueRender(option.component)
+    const dataObj: ?Object = option.data
+    return {
+      methods: option.method || {},
+      data: _ => dataObj || {},
+      render
+    }
   }
 
   // vue实现 render
-  renderVue (components: COMPONENT_ARRAY): VUE_INSTANCE {
+  makeVueRender (components: COMPONENT_ARRAY): Function {
     var classSelf = this // this指向类
-    const render = function (h: Function) {
-    var vueSelf = this // this指向vue实例
-    classSelf.getVueRouter.call(vueSelf)
+    return function (h: Function) {
+    var vueInstanceSelf = this // this指向vue实例
+    classSelf.makeVueRouter.call(vueInstanceSelf)
     return h('div', components.map(({ components, option }) => {
       if (option) {
         // 遍历以转换格式为vue组件配置格式
-        classSelf.getVueProps.call(vueSelf, option)
-        classSelf.getVueMethods.call(vueSelf, option)
+        classSelf.translateToVueProps.call(vueInstanceSelf, option)
+        classSelf.translateToVueMethods.call(vueInstanceSelf, option)
         return h(components, option)
       } else {
         return h(components)
       }
       }))
     }
-    return classSelf.getVueOptions(render)
   }
 
   router: ROUTER_OBJECT
   $route: Object
   $router: Object
   // 配置vue router实例
-  getVueRouter () {
+  makeVueRouter () {
     if (!this.$route || !this.$router) throw new Error('路由api依赖 vue router')
     this.router = Object.assign(this.$router, this.$route)
     this.router.pop = _ => history.back()
@@ -83,46 +92,27 @@ export default class VueCompile {
   }
 
   // 将props指向vue父组件实例
-  getVueProps (option: COMPONENT_OBJECT_OPTION): void {
-    var vueSelf: Object = this // this指向vue上的实例
+  translateToVueProps (option: COMPONENT_OBJECT_OPTION): void {
+    var vueInstanceSelf: Object = this // this指向vue上的实例
     // add props
     if (!option.prop) return
     const PROPS = Object.assign({}, option.prop)
     option.props = option.props || {}
     Object.keys(PROPS).forEach(key => {
-      if (option.props) option.props[key] = vueSelf[PROPS[key]]
+      if (option.props) option.props[key] = vueInstanceSelf[PROPS[key]]
     })
   }
 
   // 将methods指向vue父组件实例
-  getVueMethods (option: COMPONENT_OBJECT_OPTION): void {
-    var vueSelf: Object = this // this指向vue上的实例
+  translateToVueMethods (option: COMPONENT_OBJECT_OPTION): void {
+    var vueInstanceSelf: Object = this // this指向vue上的实例
     // add on
     if (option.on || !option.method) return
     const METHODS = Object.assign({}, option.method)
     option.on = {}
     Object.keys(METHODS).forEach(key => {
-    if (option.on) option.on[key] = vueSelf[METHODS[key]]
+    if (option.on) option.on[key] = vueInstanceSelf[METHODS[key]]
     })
-  }
-
-  option: ?CONSTRUCTOR_OPTION
-  // 生成vue实例
-  getVueOptions (render: Function): VUE_INSTANCE {
-    if (this.option) {
-      const newData: ?Object = this.option.data
-      return {
-        methods: this.option.method,
-        data: _ => newData,
-        render
-      }
-    } else {
-      return { 
-        methods: {},
-        data: _ => {},
-        render
-       }
-    }
   }
 
 }
