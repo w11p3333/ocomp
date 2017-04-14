@@ -1,12 +1,12 @@
 /*@flow*/
 // vue实例的数据类型
-type VUE_OBJECT = {
+type VUE_INSTANCE = {
    data : ?Function, // 数据
    methods : ?Object, // 转换后的实例事件
    render : Function, // 实例render函数
 }
 // vue路由实例
-type VUE_ROUTER = {
+type ROUTER_OBJECT = {
   mode: string,
   currentRoute: Object,
   push: Function,
@@ -46,13 +46,13 @@ type CONSTRUCTOR_OPTION = {
 export default class VueCompile {
 
   option: CONSTRUCTOR_OPTION
-  constructor (option: CONSTRUCTOR_OPTION): VUE_OBJECT {
+  constructor (option: CONSTRUCTOR_OPTION): VUE_INSTANCE {
     this.option = option
     return this.renderVue(option.component)
   }
 
   // vue实现 render
-  renderVue (components: COMPONENT_ARRAY): VUE_OBJECT {
+  renderVue (components: COMPONENT_ARRAY): VUE_INSTANCE {
     var classSelf = this // this指向类
     const render = function (h: Function) {
     var vueSelf = this // this指向vue实例
@@ -71,7 +71,7 @@ export default class VueCompile {
     return classSelf.getVueOptions(render)
   }
 
-  router: VUE_ROUTER
+  router: ROUTER_OBJECT
   $route: Object
   $router: Object
   // 配置vue router实例
@@ -108,7 +108,7 @@ export default class VueCompile {
 
   option: ?CONSTRUCTOR_OPTION
   // 生成vue实例
-  getVueOptions (render: Function): VUE_OBJECT {
+  getVueOptions (render: Function): VUE_INSTANCE {
     if (this.option) {
       const newData: ?Object = this.option.data
       return {
