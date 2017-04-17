@@ -59,7 +59,7 @@ export default class VueCompile {
     newData.data = oldData
     newMethod.setData = function (obj) {
       const vueInstanceSelf = this
-      Object.keys(obj).forEach(function (key) {
+      Object.keys(obj).forEach(key => {
         if (vueInstanceSelf[key]) {
           vueInstanceSelf[key] = obj[key]
           vueInstanceSelf['data'][key] = obj[key]
