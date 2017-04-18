@@ -1,0 +1,122 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'publish', '.' ]
+2 info using npm@4.1.2
+3 info using node@v7.6.0
+4 verbose publish [ '.' ]
+5 silly cache add args [ '.', null ]
+6 verbose cache add spec .
+7 silly cache add parsed spec Result {
+7 silly cache add   raw: '.',
+7 silly cache add   scope: null,
+7 silly cache add   escapedName: null,
+7 silly cache add   name: null,
+7 silly cache add   rawSpec: '.',
+7 silly cache add   spec: '/Users/luliangxiao/Documents/weex/ocomp',
+7 silly cache add   type: 'directory' }
+8 verbose addLocalDirectory /Users/luliangxiao/.npm/ocomp/1.0.40/package.tgz not in flight; packing
+9 verbose correctMkdir /Users/luliangxiao/.npm correctMkdir not in flight; initializing
+10 info lifecycle ocomp@1.0.40~prepublish: ocomp@1.0.40
+11 silly lifecycle ocomp@1.0.40~prepublish: no script for prepublish, continuing
+12 info lifecycle ocomp@1.0.40~prepare: ocomp@1.0.40
+13 silly lifecycle ocomp@1.0.40~prepare: no script for prepare, continuing
+14 verbose tar pack [ '/Users/luliangxiao/.npm/ocomp/1.0.40/package.tgz',
+14 verbose tar pack   '/Users/luliangxiao/Documents/weex/ocomp' ]
+15 verbose tarball /Users/luliangxiao/.npm/ocomp/1.0.40/package.tgz
+16 verbose folder /Users/luliangxiao/Documents/weex/ocomp
+17 verbose addLocalTarball adding from inside cache /Users/luliangxiao/.npm/ocomp/1.0.40/package.tgz
+18 verbose correctMkdir /Users/luliangxiao/.npm correctMkdir not in flight; initializing
+19 silly cache afterAdd ocomp@1.0.40
+20 verbose afterAdd /Users/luliangxiao/.npm/ocomp/1.0.40/package/package.json not in flight; writing
+21 verbose correctMkdir /Users/luliangxiao/.npm correctMkdir not in flight; initializing
+22 verbose afterAdd /Users/luliangxiao/.npm/ocomp/1.0.40/package/package.json written
+23 silly publish { name: 'ocomp',
+23 silly publish   version: '1.0.40',
+23 silly publish   main: './dist/index.js',
+23 silly publish   author: { name: 'luliangxiao' },
+23 silly publish   license: 'MIT',
+23 silly publish   files: [ 'src', 'dist' ],
+23 silly publish   scripts: { flow: 'flow', build: 'rollup -c ./build/rollup.config.js' },
+23 silly publish   devDependencies:
+23 silly publish    { 'babel-plugin-transform-flow-strip-types': '^6.22.0',
+23 silly publish      'flow-bin': '^0.43.1',
+23 silly publish      'flow-remove-types': '^1.2.0',
+23 silly publish      rollup: '^0.41.6',
+23 silly publish      'rollup-plugin-buble': '^0.15.0',
+23 silly publish      webpack: '^2.3.3' },
+23 silly publish   dependencies:
+23 silly publish    { babel: '^6.23.0',
+23 silly publish      'babel-cli': '^6.24.1',
+23 silly publish      'babel-core': '^6.24.1',
+23 silly publish      'babel-loader': '^6.4.1',
+23 silly publish      'babel-plugin-add-module-exports': '^0.2.1',
+23 silly publish      'babel-plugin-syntax-flow': '^6.18.0',
+23 silly publish      'babel-plugin-transform-runtime': '^6.23.0',
+23 silly publish      'babel-preset-es2015': '^6.24.1',
+23 silly publish      'babel-preset-flow': '^6.23.0',
+23 silly publish      'babel-preset-stage-0': '^6.24.1' },
+23 silly publish   gitHead: '2f60f6c144bd953101ca0541a0d1ae8645212db6',
+23 silly publish   readme: 'ERROR: No README data found!',
+23 silly publish   _id: 'ocomp@1.0.40',
+23 silly publish   _shasum: '526c3f50e4f4e08e8ce9bf123b16d11a543b77f9',
+23 silly publish   _from: '.' }
+24 info lifecycle ocomp@1.0.40~prepublishOnly: ocomp@1.0.40
+25 silly lifecycle ocomp@1.0.40~prepublishOnly: no script for prepublishOnly, continuing
+26 verbose getPublishConfig undefined
+27 silly mapToRegistry name ocomp
+28 silly mapToRegistry using default registry
+29 silly mapToRegistry registry https://registry.npmjs.org/
+30 silly mapToRegistry data Result {
+30 silly mapToRegistry   raw: 'ocomp',
+30 silly mapToRegistry   scope: null,
+30 silly mapToRegistry   escapedName: 'ocomp',
+30 silly mapToRegistry   name: 'ocomp',
+30 silly mapToRegistry   rawSpec: '',
+30 silly mapToRegistry   spec: 'latest',
+30 silly mapToRegistry   type: 'tag' }
+31 silly mapToRegistry uri https://registry.npmjs.org/ocomp
+32 verbose publish registryBase https://registry.npmjs.org/
+33 silly publish uploading /Users/luliangxiao/.npm/ocomp/1.0.40/package.tgz
+34 verbose request uri https://registry.npmjs.org/ocomp
+35 verbose request sending authorization for write operation
+36 info attempt registry request try #1 at 16:45:28
+37 verbose request using bearer token for auth
+38 verbose request id 7ce49382a0290e19
+39 http request PUT https://registry.npmjs.org/ocomp
+40 http 403 https://registry.npmjs.org/ocomp
+41 verbose headers { 'content-type': 'application/json',
+41 verbose headers   'cache-control': 'max-age=300',
+41 verbose headers   'content-length': '96',
+41 verbose headers   'accept-ranges': 'bytes',
+41 verbose headers   date: 'Tue, 18 Apr 2017 08:45:36 GMT',
+41 verbose headers   via: '1.1 varnish',
+41 verbose headers   connection: 'keep-alive',
+41 verbose headers   'x-served-by': 'cache-nrt6124-NRT',
+41 verbose headers   'x-cache': 'MISS',
+41 verbose headers   'x-cache-hits': '0',
+41 verbose headers   'x-timer': 'S1492505136.043331,VS0,VE510',
+41 verbose headers   vary: 'Accept-Encoding' }
+42 verbose request invalidating /Users/luliangxiao/.npm/registry.npmjs.org/ocomp on PUT
+43 error publish Failed PUT 403
+44 verbose stack Error: "You cannot publish over the previously published version 1.0.40." : ocomp
+44 verbose stack     at makeError (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:304:12)
+44 verbose stack     at CachingRegistryClient.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:292:14)
+44 verbose stack     at Request._callback (/usr/local/lib/node_modules/npm/node_modules/npm-registry-client/lib/request.js:212:14)
+44 verbose stack     at Request.self.callback (/usr/local/lib/node_modules/npm/node_modules/request/request.js:186:22)
+44 verbose stack     at emitTwo (events.js:106:13)
+44 verbose stack     at Request.emit (events.js:192:7)
+44 verbose stack     at Request.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1081:10)
+44 verbose stack     at emitOne (events.js:96:13)
+44 verbose stack     at Request.emit (events.js:189:7)
+44 verbose stack     at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/npm/node_modules/request/request.js:1001:12)
+45 verbose statusCode 403
+46 verbose pkgid ocomp
+47 verbose cwd /Users/luliangxiao/Documents/weex/ocomp
+48 error Darwin 16.5.0
+49 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "publish" "."
+50 error node v7.6.0
+51 error npm  v4.1.2
+52 error code E403
+53 error "You cannot publish over the previously published version 1.0.40." : ocomp
+54 error If you need help, you may report this error at:
+54 error     <https://github.com/npm/npm/issues>
+55 verbose exit [ 1, true ]

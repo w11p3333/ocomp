@@ -40,7 +40,7 @@ VueCompile.prototype.makeVueRender = function makeVueRender (components) {
     var vueInstanceSelf = this; // this指向vue实例
     classSelf.makeVueRouter.call(vueInstanceSelf);
     // div作为父组件包裹
-    return createElement('div', components.map(function (ref) {
+    return createElement('div', classSelf.getContainerStyle(), components.map(function (ref) {
         var components = ref.components;
         var option = ref.option;
 
@@ -53,6 +53,23 @@ VueCompile.prototype.makeVueRender = function makeVueRender (components) {
         return createElement(components); // 不存在组件配置
       }
     }));
+  };
+};
+
+// 获取container的样式
+VueCompile.prototype.getContainerStyle = function getContainerStyle () {
+  return {
+    attrs: {
+      id: 'main-container',
+      class: 'main-container'
+    },
+    style: {
+      'margin-top': 0,
+      'margin-bottom': 0,
+      'margin-left': 0,
+      'margin-right': 0,
+      'background-color': '#f0eff5'
+    }
   };
 };
 

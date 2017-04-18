@@ -80,7 +80,7 @@ export default class VueCompile {
     var vueInstanceSelf = this // this指向vue实例
     classSelf.makeVueRouter.call(vueInstanceSelf)
     // div作为父组件包裹
-    return createElement('div', components.map(({ components, option }) => {
+    return createElement('div', classSelf.getContainerStyle(), components.map(({ components, option }) => {
       if (option) {
         // 遍历以转换格式为vue组件配置格式
         classSelf.translateToVueProps.call(vueInstanceSelf, option)
@@ -93,9 +93,28 @@ export default class VueCompile {
     }
   }
 
-  router: ROUTER_OBJECT
+  // 获取container的样式
+  getContainerStyle (): Object {
+    return {
+      attrs: {
+        id: 'main-container',
+        class: 'main-container'
+      },
+      style: {
+        'margin-top': 0,
+        'margin-bottom': 0,
+        'margin-left': 0,
+        'margin-right': 0,
+        'background-color': '#f0eff5'
+      }
+    }
+  }
+
+  router: ROUTER_OBJECT | {}
   $route: Object
   $router: Object
+  weex: Object
+  navigator: { push: Function, pop: Function }
   // 配置vue router实例
   makeVueRouter () {
     const TYPE = process.env.COMPILE_ENV
