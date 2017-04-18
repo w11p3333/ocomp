@@ -114,6 +114,152 @@ VueCompile.prototype.translateToVueMethods = function translateToVueMethods (opt
 
 // vue路由实例
 
+/**
+ * Created by zhangyi on 2017/4/12.
+ * Desc: ocmp
+ */
+
+function OComp$2(options) {
+    var this$1 = this;
+
+    if (!options.data) {
+        throw new Error('no data');
+    }
+
+    this.data = options.data;
+
+    for (var key in this$1.data) {
+        this$1[key] = this$1.data[key];
+    }
+
+    if (!options.method) {
+        throw new Error('no method');
+    }
+
+    this.method = options.method;
+
+    for (var key$1 in this$1.method) {
+        this$1[key$1] = this$1.method[key$1];
+    }
+
+    if (options.component) {
+        this.component = options.component;
+    } else {
+        this.component = [];
+    }
+}
+
+OComp$2.prototype.render = function () {
+    var components = this.component;
+    var html = '';
+    var css = '';
+    var data = {};
+    var method = {};
+
+    for (var i = 0; i < components.length; i++) {
+        var component = components[i];
+        var comp = component.components;
+
+        html = html + "\n" + (comp.html) + "\n";
+        //外部属性替换
+        if (component.hasOwnProperty('option') && component.option && component.option.hasOwnProperty('prop')) {
+
+            var props = component.option.prop;
+
+            for (var key in props) {
+                var prop = props[key];
+
+                html = html.replace(new RegExp(("{{" + key + "}}"), 'g'), ("{{ " + prop + " }}"));
+                html = html.replace(new RegExp(("{{ " + key + " }}"), 'g'), ("{{ " + prop + " }}"));
+            }
+        }
+
+        //内部属性
+        if (comp.hasOwnProperty('data')) {
+            var _data = comp.data;
+
+            for (var key$1 in _data) {
+                var name = "OCOMP_" + i + "_DATA_" + key$1;
+
+                html = html.replace(new RegExp(("{{" + key$1 + "}}"), 'g'), ("{{ " + name + " }}"));
+                html = html.replace(new RegExp(("{{ " + key$1 + " }}"), 'g'), ("{{ " + name + " }}"));
+
+                data[name] = _data[key$1];
+            }
+        }
+
+        //内部函数
+        if (comp.hasOwnProperty('method')) {
+            var _methods = comp.method;
+            var idx = 0;
+
+            for (var key$2 in _methods) {
+                var name$1 = "OCOMP_" + i + "_METHOD_" + idx;
+
+                html = html.replace(new RegExp(("{{" + key$2 + "}}"), 'g'), ("{{ " + name$1 + " }}"));
+                html = html.replace(new RegExp(("{{ " + key$2 + " }}"), 'g'), ("{{ " + name$1 + " }}"));
+
+                var method_str = _methods[key$2].toString();
+
+                if (comp.hasOwnProperty('data')) {
+                    var _data$1 = comp.data;
+
+                    for (var key$3 in _data$1) {
+                        var name$2 = "OCOMP_" + i + "_DATA_" + key$3;
+                        method_str = method_str.replace(new RegExp(key$3, 'g'), name$2);
+                    }
+                }
+
+                if (component.hasOwnProperty('option') && component.option && component.option.hasOwnProperty('method')) {
+
+                    var outer_methods = component.option.method;
+
+                    for (var key$4 in outer_methods) {
+                        var outer_method = outer_methods[key$4];
+                        method_str = method_str.replace(new RegExp('\\$' + key$4, 'g'), outer_method);
+                    }
+                }
+
+                html = html.replace(new RegExp(key$2, 'g'), name$1);
+                method[name$1] = method_str;
+
+                idx++;
+            }
+        }
+
+        // 外部函数替换
+        // if(component.hasOwnProperty('option') && component.option &&
+        //     component.option.hasOwnProperty('method')) {
+        //
+        //     let methods = component.option.method
+        //
+        //     for(let key in methods) {
+        //         let method = methods[key]
+        //
+        //         html = html.replace(new RegExp(key, 'g'), method)
+        //         html = html.replace(new RegExp(key, 'g'), method)
+        //     }
+        // }
+
+        css = css + "\n" + (comp.css) + "\n";
+    }
+
+    return {
+        html: html,
+        css: css,
+        data: data,
+        method: method
+    };
+};
+
+OComp$2.prototype.getData = function () {
+    return this.data;
+};
+
+OComp$2.prototype.getMethod = function () {
+    return this.method;
+};
+
 var OComp = function OComp(option) {
   this.VUE_COMPONENTS = 'vue';
   this.WX_COMPONENTS = 'wx';
@@ -129,7 +275,7 @@ OComp.prototype.render = function render (option) {
   if (!componentsArr || !Array.isArray(componentsArr)) { throw new Error('组件列表必须为数组'); }
   var TYPE = process.env.COMPILE_ENV;
   if (!(this.type.indexOf(TYPE) > -1)) { throw new Error('组件类型错误'); }
-  if (TYPE === this.VUE_COMPONENTS || TYPE === this.WEEX_COMPONENTS) { return new VueCompile(option); }
+  if (TYPE === this.VUE_COMPONENTS || TYPE === this.WEEX_COMPONENTS) { return new VueCompile(option); }else if (TYPE === this.WX_COMPONENTS) { return new OComp$2(option); }
 };
 
 export default OComp;

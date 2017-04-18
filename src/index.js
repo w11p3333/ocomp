@@ -1,5 +1,6 @@
 
 import VueCompile from './vueCompile'
+import WxCompile from './wxCompile'
 
 export default class OComp {
 
@@ -19,6 +20,7 @@ export default class OComp {
     const TYPE = process.env.COMPILE_ENV
     if (!(this.type.indexOf(TYPE) > -1)) throw new Error('组件类型错误')
     if (TYPE === this.VUE_COMPONENTS || TYPE === this.WEEX_COMPONENTS) return new VueCompile(option)
+    else if (TYPE === this.WX_COMPONENTS) return new WxCompile(option)
   }
 
 }
