@@ -1,5 +1,9 @@
-import _Object$keys from 'babel-runtime/core-js/object/keys';
-import _Object$assign from 'babel-runtime/core-js/object/assign';
+'use strict';
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var _Object$keys = _interopDefault(require('babel-runtime/core-js/object/keys'));
+var _Object$assign = _interopDefault(require('babel-runtime/core-js/object/assign'));
 
 // 组件数组
 
@@ -293,4 +297,4 @@ var OComp = function OComp(option) {
   if (TYPE === this.VUE_COMPONENTS || TYPE === this.WEEX_COMPONENTS) { return new VueCompile(option); }else if (TYPE === this.WX_COMPONENTS) { return new OComp$2(option); }
 };
 
-export default OComp;
+module.exports = OComp;
