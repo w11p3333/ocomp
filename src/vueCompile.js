@@ -98,9 +98,29 @@ export default class VueCompile {
   $router: Object
   // 配置vue router实例
   makeVueRouter () {
-    if (!this.$route || !this.$router) throw new Error('路由api依赖 vue router')
-    this.router = Object.assign(this.$router, this.$route) // 将vue router中的router route对象 混合
-    this.router.pop = _ => history.back()
+    const TYPE = process.env.COMPILE_ENV
+    if (TYPE === 'vue') {
+      if (!this.$route || !this.$router) throw new Error('vue路由api依赖 vue-router')
+      this.router = Object.assign(this.$router, this.$route) // 将vue router中的router route对象 混合
+      this.router.pop = _ => history.back()
+    } else if (TYPE === 'weex') {
+      this.router = {}
+      this.router.push = path => {
+        var navigator = weex.requireModule('navigator')
+        if (!navigator)  { throw new Error('weex路由api依赖 weex navigator'); }
+          var url = weex.config.bundleUrl;  //獲取當前a.we頁面的路徑(xxx/a.js)
+          url = url.split('/').slice(0,-1).join('/') + path + '.js';  //獲取b.we編譯後的b.js的相對路徑
+          navigator.push({
+            url: url,
+            animated: "true"
+          })
+      }
+      this.router.pop = _ => {
+        navigator.pop({
+            animated: "true"
+        })
+      }
+    }
   }
 
   // 将props指向vue父组件实例

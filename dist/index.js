@@ -58,9 +58,31 @@ VueCompile.prototype.makeVueRender = function makeVueRender (components) {
 
 // 配置vue router实例
 VueCompile.prototype.makeVueRouter = function makeVueRouter () {
-  if (!this.$route || !this.$router) { throw new Error('路由api依赖 vue router'); }
-  this.router = _Object$assign(this.$router, this.$route); // 将vue router中的router route对象 混合
-  this.router.pop = function (_) { return history.back(); };
+  var TYPE = process.env.COMPILE_ENV;
+  if (TYPE === 'vue') {
+    if (!this.$route || !this.$router) { throw new Error('vue路由api依赖 vue-router'); }
+    this.router = _Object$assign(this.$router, this.$route); // 将vue router中的router route对象 混合
+    this.router.pop = function (_) { return history.back(); };
+  } else if (TYPE === 'weex') {
+    this.router = {};
+    this.router.push = function (path) {
+      var navigator = weex.requireModule('navigator');
+      if (!navigator) {
+        throw new Error('weex路由api依赖 weex navigator');
+      }
+      var url = weex.config.bundleUrl; //獲取當前a.we頁面的路徑(xxx/a.js)
+      url = url.split('/').slice(0, -1).join('/') + path + '.js'; //獲取b.we編譯後的b.js的相對路徑
+      navigator.push({
+        url: url,
+        animated: "true"
+      });
+    };
+    this.router.pop = function (_) {
+      navigator.pop({
+        animated: "true"
+      });
+    };
+  }
 };
 
 // 将props指向vue父组件实例
@@ -95,7 +117,8 @@ VueCompile.prototype.translateToVueMethods = function translateToVueMethods (opt
 var OComp = function OComp(option) {
   this.VUE_COMPONENTS = 'vue';
   this.WX_COMPONENTS = 'wx';
-  this.type = [this.VUE_COMPONENTS, this.WX_COMPONENTS];
+  this.WEEX_COMPONENTS = 'weex';
+  this.type = [this.VUE_COMPONENTS, this.WX_COMPONENTS, this.WEEX_COMPONENTS];
   return this.render(option);
 };
 
@@ -106,7 +129,7 @@ OComp.prototype.render = function render (option) {
   if (!componentsArr || !Array.isArray(componentsArr)) { throw new Error('组件列表必须为数组'); }
   var TYPE = process.env.COMPILE_ENV;
   if (!(this.type.indexOf(TYPE) > -1)) { throw new Error('组件类型错误'); }
-  if (TYPE === this.VUE_COMPONENTS) { return new VueCompile(option); }
+  if (TYPE === this.VUE_COMPONENTS || TYPE === this.WEEX_COMPONENTS) { return new VueCompile(option); }
 };
 
 export default OComp;
