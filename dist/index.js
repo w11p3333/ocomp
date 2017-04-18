@@ -281,17 +281,15 @@ var OComp = function OComp(option) {
   this.VUE_COMPONENTS = 'vue';
   this.WX_COMPONENTS = 'wx';
   this.WEEX_COMPONENTS = 'weex';
-  this.type = [this.VUE_COMPONENTS, this.WX_COMPONENTS, this.WEEX_COMPONENTS];
-  return this.render(option);
-};
+  var type = [this.VUE_COMPONENTS, this.WX_COMPONENTS, this.WEEX_COMPONENTS];
 
-// 渲染
-OComp.prototype.render = function render (option) {
   if (!option) { throw new Error('构造参数不存在'); }
   var componentsArr = option.component;
   if (!componentsArr || !Array.isArray(componentsArr)) { throw new Error('组件列表必须为数组'); }
+
   var TYPE = process.env.COMPILE_ENV;
-  if (!(this.type.indexOf(TYPE) > -1)) { throw new Error('组件类型错误'); }
+  if (!(type.indexOf(TYPE) > -1)) { throw new Error('组件类型错误'); }
+
   if (TYPE === this.VUE_COMPONENTS || TYPE === this.WEEX_COMPONENTS) { return new VueCompile(option); }else if (TYPE === this.WX_COMPONENTS) { return new OComp$2(option); }
 };
 
