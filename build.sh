@@ -1,8 +1,8 @@
 mkdir middle
 babel ./src/ -d ./middle
-yarn build
+rollup -c ./build/rollup.config.js
 rm -rf ./middle/
 npm publish .
 git add -A
 git commit -m "auto commit"
-git push
+git push origin master

@@ -1,146 +1,187 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var _Object$keys = _interopDefault(require('babel-runtime/core-js/object/keys'));
 var _Object$assign = _interopDefault(require('babel-runtime/core-js/object/assign'));
+var _Reflect$set = _interopDefault(require('babel-runtime/core-js/reflect/set'));
+var _Object$keys = _interopDefault(require('babel-runtime/core-js/object/keys'));
+var _Reflect$defineProperty = _interopDefault(require('babel-runtime/core-js/reflect/define-property'));
+var _Reflect$get = _interopDefault(require('babel-runtime/core-js/reflect/get'));
+var _Reflect$has = _interopDefault(require('babel-runtime/core-js/reflect/has'));
+var _Map = _interopDefault(require('babel-runtime/core-js/map'));
 
-// 组件数组
-
-// 组件配置项的数据类型
-
-// vue实例的数据类型
-var VueCompile = function VueCompile(option) {
-  return this.makeVueInstance(option);
+var getLifeCycle = function (lifeCycle) {
+  return lifeCycle ? {
+    created: lifeCycle.init,
+    mounted: lifeCycle.ready,
+    destoryed: lifeCycle.destory
+  } : {};
 };
 
-// 生成vue实例
-VueCompile.prototype.makeVueInstance = function makeVueInstance (option) {
-  var render = this.makeVueRender(option.component);
-  var newMethod = option.method || {};
-  var oldData = option.data || {};
-  var newData = _Object$assign({}, oldData);
-  newData.data = oldData;
-  newMethod.setData = function (obj) {
-    var vueInstanceSelf = this;
-    _Object$keys(obj).forEach(function (key) {
-      if (vueInstanceSelf[key]) {
-        vueInstanceSelf[key] = obj[key];
-        vueInstanceSelf['data'][key] = obj[key];
-      }
+// 将props指向vue父组件实例
+var getProps = function (vueInstance, props) {
+    if (!props) { return; }
+    var newProps = {};
+    _Object$keys(props).forEach(function (key) {
+        var value = props[key];
+        var prop = typeof value === 'string' && value.indexOf('$') === 0 ? vueInstance[value.substring(1, value.length)] : value;
+        // 若是以$开头则为变量
+        _Reflect$set(newProps, key, prop);
     });
-  };
-  return {
-    methods: newMethod,
-    data: function (_) { return newData; },
-    render: render
-  };
+    return newProps;
 };
 
-// vue实现 render
-VueCompile.prototype.makeVueRender = function makeVueRender (components) {
-  var classSelf = this; // this指向类
-  return function (createElement) {
-    var vueInstanceSelf = this; // this指向vue实例
-    classSelf.makeVueRouter.call(vueInstanceSelf);
-    // div作为父组件包裹
-    return createElement('div', classSelf.getContainerStyle(), components.map(function (ref) {
-        var components = ref.components;
-        var option = ref.option;
-
-      if (option) {
-        // 遍历以转换格式为vue组件配置格式
-        classSelf.translateToVueProps.call(vueInstanceSelf, option);
-        classSelf.translateToVueMethods.call(vueInstanceSelf, option);
-        return createElement(components, option); // 若存在组件配置
-      } else {
-        return createElement(components); // 不存在组件配置
-      }
-    }));
-  };
+// 将methods指向vue父组件实例
+var getMethods = function (vueInstance, methods) {
+    if (!methods) { return; }
+    var newMethod = {};
+    _Object$keys(methods).forEach(function (key) {
+        var value = methods[key];
+        if (!value.indexOf('$') === 0) { throw new Error('定义组件的method 必须使用$开头的字符串表示变量'); }
+        _Reflect$set(newMethod, key, vueInstance[value.substring(1, value.length)]);
+    });
+    return newMethod;
 };
 
-// 获取container的样式
-VueCompile.prototype.getContainerStyle = function getContainerStyle () {
+var baseStyle = {
+  'margin-top': 0,
+  'margin-bottom': 0,
+  'margin-left': 0,
+  'margin-right': 0
+};
+
+
+var getContainerStyle = function (style) {
   return {
     attrs: {
       id: 'main-container',
       class: 'main-container'
     },
-    style: {
-      'margin-top': 0,
-      'margin-bottom': 0,
-      'margin-left': 0,
-      'margin-right': 0,
-      'background-color': '#f0eff5'
-    }
+    style: _Object$assign(baseStyle, style)
   };
 };
 
-// 配置vue router实例
-VueCompile.prototype.makeVueRouter = function makeVueRouter () {
+// 生成vue render方法
+var getRender = function (option) {
+  var components = option.component;
+
+  function render(vueInstance, h, components, option) {
+    if (option) {
+      var prop = option.prop;
+      var method = option.method;
+      return h(components, {
+        props: getProps(vueInstance, prop),
+        on: getMethods(vueInstance, method)
+      }); // 若存在组件配置
+    } else { return h(components); } // 不存在组件配置
+  }
+
+  return function (h) {
+    var vueInstance = this; // this指向vue实例
+    return Array.isArray(components) ? h('div', getContainerStyle(option.style), components.map(function (ref) {
+      var components = ref.components;
+      var option = ref.option;
+
+      return render(vueInstance, h, components, option);
+    })) : render(vueInstance, h, components.components, components.option);
+  };
+};
+
+// 配置vue router 实例
+var getRouter = function (vueInstance) {
   var TYPE = process.env.COMPILE_ENV;
+  var router = {};
+  var pushHandler = {};
+  var popHandler = {};
   if (TYPE === 'vue') {
-    if (!this.$route || !this.$router) { throw new Error('vue路由api依赖 vue-router'); }
-    this.router = _Object$assign(this.$router, this.$route); // 将vue router中的router route对象 混合
-    this.router.pop = function (_) { return history.back(); };
+    if (!vueInstance.$route || !vueInstance.$router) { throw new Error('vue路由api依赖 vue-router'); }
+    popHandler = {
+      get: function (_) { return function (_) { return history.back(); }; }
+    };
+    router = _Object$assign(vueInstance.$router, vueInstance.$route);
   } else if (TYPE === 'weex') {
-    this.router = {};
-    this.router.push = function (path) {
-      var navigator = weex.requireModule('navigator');
-      if (!navigator) {
-        throw new Error('weex路由api依赖 weex navigator');
-      }
-      var url = weex.config.bundleUrl; //獲取當前a.we頁面的路徑(xxx/a.js)
-      url = url.split('/').slice(0, -1).join('/') + path + '.js'; //獲取b.we編譯後的b.js的相對路徑
-      navigator.push({
-        url: url,
-        animated: "true"
-      });
+    var navigator = weex.requireModule('navigator');
+    if (!navigator) { throw new Error('weex路由api依赖 weex navigator'); }
+    pushHandler = {
+      get: function (_) { return function (path) {
+        var navigator = weex.requireModule('navigator');
+        if (!navigator) { throw new Error('weex路由api依赖 weex navigator'); }
+        var url = weex.config.bundleUrl.split('/').slice(0, -1).join('/') + '/' + path + '.js'; // 将a.js的绝对地址转为b.js的绝对地址
+        navigator.push({ url: url, animated: "true" });
+      }; }
     };
-    this.router.pop = function (_) {
-      navigator.pop({
-        animated: "true"
-      });
+    popHandler = {
+      get: function (_) { return function (_) { return navigator.pop({ animated: 'true' }); }; }
     };
+    // 添加push对象
+    _Reflect$defineProperty(router, 'push', pushHandler);
+  }
+  // 添加pop对象
+  _Reflect$defineProperty(router, 'pop', popHandler);
+  return router;
+};
+
+// vue实例上挂载自定义对象
+
+var defineInstanceProperty = function (vueInstance) {
+  var properties = new _Map();
+  // 定义setData
+  properties.set('setData', {
+    // 调用setData时遍历挂载在vue实例下的data 并赋值
+    get: function (_) { return function (obj) { return _Object$keys(obj).map(function (key) { return _Reflect$has(vueInstance, key) && _Reflect$set(vueInstance, key, obj[key]); }); }; }
+  });
+  // 定义data proxy 对象
+  properties.set('data', {
+    get: function (_) { return vueInstance; }
+  });
+  // 定义fetch 对象
+  properties.set('fetch', {
+    get: function (_) { return weex.requireModule('stream').fetch; }
+  });
+  // 定义config 对象
+  properties.set('config', {
+    get: function (_) { return weex.config; }
+  });
+  // 定义router 对象
+  properties.set('router', {
+    get: function (_) { return getRouter(vueInstance); }
+  });
+  // 遍历并定义
+  properties.forEach(function (handler, name) {
+    _Reflect$get(vueInstance, name) === undefined && _Reflect$defineProperty(vueInstance, name, handler);
+  });
+};
+
+var mixins = {
+  beforeCreate: function beforeCreate() {
+    defineInstanceProperty(this);
   }
 };
 
-// 将props指向vue父组件实例
-VueCompile.prototype.translateToVueProps = function translateToVueProps (option) {
-  var vueInstanceSelf = this; // this指向vue上的实例
-  if (!option.prop) { return; }
-  var PROPS = _Object$assign({}, option.prop);
-  option.props = option.props || {};
-  _Object$keys(PROPS).forEach(function (key) {
-    if (option.props) { option.props[key] = vueInstanceSelf[PROPS[key]]; }
-  });
+var VueCompile = function VueCompile(option) {
+  return this.getInstance(option);
 };
 
-// 将methods指向vue父组件实例
-VueCompile.prototype.translateToVueMethods = function translateToVueMethods (option) {
-  var vueInstanceSelf = this; // this指向vue上的实例
-  if (option.on || !option.method) { return; }
-  var METHODS = _Object$assign({}, option.method);
-  option.on = {};
-  _Object$keys(METHODS).forEach(function (key) {
-    if (option.on) { option.on[key] = vueInstanceSelf[METHODS[key]]; }
+// 生成vue实例
+VueCompile.prototype.getInstance = function getInstance (option) {
+  var render = getRender(option);
+  var data = option.data || {};
+  return _Object$assign(getLifeCycle(option.lifeCycle), {
+    mixins: [mixins],
+    methods: option.method,
+    data: function (_) { return data; },
+    render: render
   });
 };
-
-
-// 传入的实例化参数
-
-// 组件的数据类型
-
-// vue路由实例
 
 /**
  * Created by zhangyi on 2017/4/12.
  * Desc: ocmp
  */
 
-function OComp$2(options) {
+function OComp$1(options) {
     var this$1 = this;
 
     if (!options.data) {
@@ -170,7 +211,7 @@ function OComp$2(options) {
     }
 }
 
-OComp$2.prototype.render = function () {
+OComp$1.prototype.render = function () {
     var components = this.component;
     var html = '';
     var css = '';
@@ -273,11 +314,11 @@ OComp$2.prototype.render = function () {
     };
 };
 
-OComp$2.prototype.getData = function () {
+OComp$1.prototype.getData = function () {
     return this.data;
 };
 
-OComp$2.prototype.getMethod = function () {
+OComp$1.prototype.getMethod = function () {
     return this.method;
 };
 
@@ -289,12 +330,20 @@ var OComp = function OComp(option) {
 
   if (!option) { throw new Error('构造参数不存在'); }
   var componentsArr = option.component;
-  if (!componentsArr || !Array.isArray(componentsArr)) { throw new Error('组件列表必须为数组'); }
+  if (!componentsArr) { throw new Error('组件不存在'); }
 
   var TYPE = process.env.COMPILE_ENV;
   if (!(type.indexOf(TYPE) > -1)) { throw new Error('组件类型错误'); }
 
-  if (TYPE === this.VUE_COMPONENTS || TYPE === this.WEEX_COMPONENTS) { return new VueCompile(option); }else if (TYPE === this.WX_COMPONENTS) { return new OComp$2(option); }
+  if (TYPE === this.VUE_COMPONENTS || TYPE === this.WEEX_COMPONENTS) { return new VueCompile(option); }else if (TYPE === this.WX_COMPONENTS) { return new OComp$1(option); }
 };
 
-module.exports = OComp;
+var Component = function Component(ref, option) {
+  var weexComponent = ref.weexComponent;
+
+  this.components = weexComponent;
+  this.option = option;
+};
+
+exports.OComp = OComp;
+exports.Component = Component;
